@@ -61,7 +61,7 @@ app.post('/api/search', async (req, res) => {
                     metadatas: papers.map(paper => ({
                         title: paper.title,
                         authors: paper.authors,
-                        source: source
+                        source: paper.source // Corrected from source to paper.source
                     }))
                 });
             } catch (chromaError) {
