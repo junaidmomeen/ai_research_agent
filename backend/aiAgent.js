@@ -17,6 +17,27 @@ function getClient() {
     return openaiClient;
 }
 
+// Function to generate embeddings for a given text
+export async function generateEmbedding(text) {
+    try {
+        if (!text || typeof text !== 'string') {
+            throw new Error("Input for embedding must be a non-empty string.");
+        }
+
+        const openai = getClient();
+
+        const embeddingResponse = await openai.embeddings.create({
+            model: "text-embedding-ada-002",
+            input: text,
+        });
+
+        return embeddingResponse.data[0].embedding;
+    } catch (error) {
+        console.error("Error generating embedding:", error);
+        throw error; // Re-throw to be handled by the caller
+    }
+}
+
 // Main function to analyze documents
 export async function analyzeDocuments(documents) {
     try {

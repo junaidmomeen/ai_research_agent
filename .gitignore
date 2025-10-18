@@ -36,6 +36,10 @@ Thumbs.db
 # ChromaDB
 chromadb/
 .chroma/
+chroma_data/
+
+# Backend specific
+backend/config.json
 
 # Vite
-.vite/ 
+.vite/
