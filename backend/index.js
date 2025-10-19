@@ -1,14 +1,25 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import rateLimit from "express-rate-limit";
 import { analyzeDocuments, generateEmbedding } from "./aiAgent.js";
 import { fetchPapers } from "./paperFetcher.js";
 import { ChromaClient } from "chromadb";
 
 dotenv.config();
 
+// ✅ PRIORITY 2.1: Validate required environment variables at startup
+const requiredEnvVars = ['OPENAI_API_KEY'];
+requiredEnvVars.forEach(key => {
+  if (!process.env[key]) {
+    console.error(`❌ Missing required environment variable: ${key}`);
+    console.error(`Please set ${key} in your .env file`);
+    process.exit(1);
+  }
+});
+
 const app = express();
-const PORT = process.env.PORT || 3000;
+let PORT = process.env.PORT || 3000;
 
 // Initialize ChromaDB client
 let chromaClient;
@@ -18,7 +29,7 @@ let chromaInitialized = false;
 async function initChromaDB() {
   try {
     chromaClient = new ChromaClient({ 
-      path: "http://localhost:8000" 
+      path: process.env.CHROMA_URL || "http://localhost:8000" 
     });
     
     // Test connection by getting heartbeat
@@ -38,8 +49,12 @@ async function initChromaDB() {
   }
 }
 
-// Middleware
-app.use(cors());
+// ✅ PRIORITY 2.2: Restrict CORS to your frontend only
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true
+}));
+
 app.use(express.json());
 
 // Remove Content-Security-Policy header to prevent blocking errors
@@ -54,15 +69,71 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
-app.post("/api/search", async (req, res) => {
+// ✅ PRIORITY 2.3: Rate limiting for search endpoint
+const searchLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // 20 requests per 15-minute window
+  message: { 
+    error: 'Too many search requests. Please try again in 15 minutes.',
+    retryAfter: '15 minutes'
+  },
+  standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
+  legacyHeaders: false, // Disable `X-RateLimit-*` headers
+  handler: (req, res) => {
+    console.log(`⚠️ Rate limit exceeded for IP: ${req.ip}`);
+    res.status(429).json({
+      error: 'Too many search requests. Please try again in 15 minutes.',
+      retryAfter: '15 minutes'
+    });
+  }
+});
+
+// ✅ PRIORITY 1.1: Input validation middleware
+const validateSearchInput = (req, res, next) => {
+  const { query, source } = req.body;
+  
+  // Check if query exists
+  if (!query) {
+    return res.status(400).json({ error: "Query parameter is required" });
+  }
+  
+  // Check if query is a string
+  if (typeof query !== 'string') {
+    return res.status(400).json({ error: "Query must be a string" });
+  }
+  
+  // Trim whitespace
+  req.body.query = query.trim();
+  
+  // Check minimum length
+  if (req.body.query.length < 2) {
+    return res.status(400).json({ 
+      error: "Query must be at least 2 characters long" 
+    });
+  }
+  
+  // Check maximum length (prevent abuse)
+  if (req.body.query.length > 200) {
+    return res.status(400).json({ 
+      error: "Query too long (maximum 200 characters)" 
+    });
+  }
+  
+  // Validate source parameter if provided
+  if (source && !['all', 'arxiv', 'pubmed'].includes(source)) {
+    return res.status(400).json({ 
+      error: "Invalid source. Must be 'all', 'arxiv', or 'pubmed'" 
+    });
+  }
+  
+  next();
+};
+
+// Routes - Apply rate limiting and validation to search endpoint
+app.post("/api/search", searchLimiter, validateSearchInput, async (req, res) => {
   try {
     console.log("Search request body:", req.body);
     const { query, source } = req.body;
-
-    if (!query) {
-      return res.status(400).json({ error: "Query parameter is required" });
-    }
 
     let relevantPapers = [];
     let relevantSummaries = [];
@@ -79,10 +150,16 @@ app.post("/api/search", async (req, res) => {
         console.log("Generating embedding for query...");
         const queryEmbedding = await generateEmbedding(query);
 
-        console.log("Querying ChromaDB for similar documents...");
+        let where = {};
+        if (source && source !== 'all') {
+          where = { source: source };
+        }
+
+        console.log("Querying ChromaDB for similar documents with where clause:", where);
         const chromaResults = await collection.query({
           queryEmbeddings: [queryEmbedding],
           nResults: 5,
+          where: where,
           include: ['documents', 'metadatas', 'distances']
         });
 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { FaSearch, FaHistory } from 'react-icons/fa';
 import './App.css';
+import SummaryRenderer from './SummaryRenderer';
 
 function App() {
     const [query, setQuery] = useState('');
@@ -52,7 +53,7 @@ function App() {
     };
 
     return (
-        <div className="min-h-screen bg-black text-white py-4 px-3 md:px-4">
+        <div className="min-h-screen bg-gray-900 text-white py-4 px-3 md:px-4">
             <div className="flex justify-center">
                 <div className="w-full lg:w-10/12 xl:w-8/12">
                     <h1 className="text-center text-2xl font-bold mb-4">AI Research Assistant</h1>
@@ -108,15 +109,15 @@ function App() {
                     {results.length > 0 && (
                         <div className="results-container">
                             {results.map((paper, index) => (
-                                <div key={index} className="bg-gray-800 shadow-md rounded-lg p-4 mb-4">
+                                <div key={index} className="bg-gray-900 shadow-md rounded-lg p-4 mb-4 border border-gray-700">
                                     <h2 className="text-xl font-semibold mb-2">{paper.title}</h2>
                                     <h3 className="text-gray-400 text-sm mb-3">
                                         {paper.authors.join(', ')}
                                     </h3>
-                                    <p className="text-gray-300 mb-4">
+                                    <div className="text-gray-300 mb-4 border border-gray-700 rounded-md p-4">
                                         <strong className="font-bold">Summary:</strong><br />
-                                        {paper.summary}
-                                    </p>
+                                        <SummaryRenderer summary={paper.summary} />
+                                    </div>
                                     <a 
                                         href={paper.link} 
                                         target="_blank"

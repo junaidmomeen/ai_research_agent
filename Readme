@@ -157,7 +157,7 @@ NODE_ENV=development
 ### Step 4: Start ChromaDB (Docker)
 
 ```bash
-docker run -p 8000:8000 --name chromadb-server -v 'path/to/your/project/chroma_data:/chroma/chroma' ghcr.io/chroma-core/chroma:0.5.5
+docker run -p 8000:8000 --name chromadb-server -v 'path/to/your/project/chroma_data:/chroma/chroma' chromadb/chroma:0.4.24
 
 ### Step 5: Start Application
 
