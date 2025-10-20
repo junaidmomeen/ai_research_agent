@@ -120,9 +120,9 @@ const validateSearchInput = (req, res, next) => {
   }
   
   // Validate source parameter if provided
-  if (source && !['all', 'arxiv', 'pubmed'].includes(source)) {
+  if (source && !['all', 'arxiv', 'pubmed', 'semantic'].includes(source)) {
     return res.status(400).json({ 
-      error: "Invalid source. Must be 'all', 'arxiv', or 'pubmed'" 
+      error: "Invalid source. Must be 'all', 'arxiv', 'pubmed', or 'semantic'" 
     });
   }
   
@@ -250,6 +250,10 @@ app.post("/api/search", searchLimiter, validateSearchInput, async (req, res) => 
     // Step 5: Combine and return all results
     const allPapers = [...relevantPapers, ...newPapers];
     const allSummaries = [...relevantSummaries, ...newSummaries];
+
+    console.log("Data being sent to frontend:");
+    console.log("Papers:", JSON.stringify(allPapers, null, 2));
+    console.log("Summaries:", JSON.stringify(allSummaries, null, 2));
 
     console.log(`✅ Search completed successfully - returning ${allPapers.length} total papers`);
     

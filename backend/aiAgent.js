@@ -64,6 +64,7 @@ export async function analyzeDocuments(documents) {
 async function generateSummary(doc, index) {
     try {
         const textToSummarize = doc.summary || doc.title || (typeof doc === 'string' ? doc : '');
+        console.log(`Document ${index} text to summarize:`, textToSummarize);
 
         if (!textToSummarize || typeof textToSummarize !== 'string' || textToSummarize.length < 50) {
             console.log(`Document ${index} has insufficient content, returning original text.`);

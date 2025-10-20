@@ -2,306 +2,78 @@
 
 An intelligent full-stack application that helps researchers discover and analyze academic papers using AI-powered semantic search and automated summarization.
 
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Architecture](#architecture)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Project Structure](#project-structure)
-- [Key Learnings](#key-learnings)
-- [Future Enhancements](#future-enhancements)
-
----
-
-## 🎯 Overview
-
-The AI Research Assistant is a sophisticated web application designed to streamline academic research by:
-- Fetching papers from multiple sources (arXiv, PubMed)
-- Generating AI-powered summaries using GPT-4o-mini
-- Implementing semantic search using vector embeddings
-- Persisting research data with ChromaDB vector database
-
-This project demonstrates proficiency in full-stack development, AI integration, and modern database technologies.
-
 ---
 
 ## ✨ Features
 
-### Core Functionality
-- **Multi-Source Search**: Queries both arXiv and PubMed simultaneously
-- **AI Summarization**: Automatically generates concise summaries of research papers
-- **Semantic Search**: Uses vector embeddings for intelligent similarity matching
-- **Persistent Storage**: ChromaDB integration for long-term data retention
-- **Smart Caching**: Retrieves previously analyzed papers instantly
-- **Real-time Processing**: Live feedback during paper analysis
-
-### Technical Highlights
-- **Vector Database Integration**: ChromaDB for efficient similarity search
-- **Containerization**: Docker-based ChromaDB deployment
-- **API Integration**: OpenAI GPT-4o-mini for natural language processing
-- **Responsive Design**: Modern React frontend with Tailwind CSS
-- **Error Handling**: Graceful degradation when services are unavailable
+-   **Multi-Source Search**: Queries arXiv, PubMed, and Semantic Scholar.
+-   **AI Summarization**: Automatically generates concise summaries of research papers.
+-   **Semantic Search**: Uses vector embeddings for intelligent similarity matching.
+-   **Persistent Storage**: Caches results in a local vector database for faster retrieval.
 
 ---
 
 ## 🛠️ Tech Stack
 
-### Frontend
-- **React 18** - Modern UI library
-- **Vite** - Fast build tool and dev server
-- **Tailwind CSS** - Utility-first styling
-- **React Icons** - Icon library
-
-### Backend
-- **Node.js** - JavaScript runtime
-- **Express.js** - Web framework
-- **OpenAI API** - GPT-4o-mini for summarization and embeddings
-- **Axios** - HTTP client
-- **XML2JS** - XML parsing for arXiv data
-
-### Database & Storage
-- **ChromaDB 0.4.24** - Vector database for semantic search
-- **Docker** - Container platform for ChromaDB
-- **chromadb (npm)** - Node.js client library
-
-### Development Tools
-- **Nodemon** - Auto-restart during development
-- **dotenv** - Environment variable management
-- **CORS** - Cross-origin resource sharing
+-   **Frontend**: React, Vite, Tailwind CSS
+-   **Backend**: Node.js, Express.js
+-   **APIs**: OpenAI, Semantic Scholar, arXiv, PubMed
+-   **Database**: ChromaDB
 
 ---
 
-## 🏗️ Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                         Frontend (React)                     │
-│                     http://localhost:5173                    │
-└──────────────────────────┬──────────────────────────────────┘
-                           │ Vite Proxy
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    Backend (Express.js)                      │
-│                     http://localhost:3000                    │
-│                                                              │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐     │
-│  │ paperFetcher │  │   aiAgent    │  │  ChromaDB    │     │
-│  │   (arXiv,    │  │  (OpenAI)    │  │   Client     │     │
-│  │   PubMed)    │  │              │  │              │     │
-│  └──────────────┘  └──────────────┘  └──────┬───────┘     │
-└────────────────────────────────────────────┬┴──────────────┘
-                                             │
-                           ┌─────────────────▼────────────────┐
-                           │    ChromaDB Vector Database      │
-                           │      (Docker Container)          │
-                           │     http://localhost:8000        │
-                           │                                  │
-                           │  - Stores paper embeddings       │
-                           │  - Enables semantic search       │
-                           │  - Persists to disk             │
-                           └──────────────────────────────────┘
-```
-
-### Data Flow
-
-1. **User Query** → Frontend sends search request
-2. **Query Embedding** → Backend generates vector embedding of query
-3. **ChromaDB Search** → Searches for semantically similar papers
-4. **External Fetch** → Queries arXiv/PubMed for new papers
-5. **AI Summarization** → GPT-4o-mini generates summaries
-6. **Embedding Generation** → Creates embeddings for new papers
-7. **Storage** → Saves to ChromaDB for future retrieval
-8. **Response** → Returns papers and summaries to frontend
-
----
-
-## 💾 Installation
+## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js (v18 or higher)
-- Docker Desktop
-- OpenAI API Key
 
-### Step 1: Clone Repository
+-   Node.js (v18 or higher)
+-   Docker Desktop
+-   OpenAI API Key
+
+### 1. Clone the Repository
+
 ```bash
 git clone https://github.com/junaidmomeen/ai_research_agent.git
 cd ai-research-agent
 ```
 
-### Step 2: Install Dependencies
+### 2. Install Dependencies
 
-**Backend:**
 ```bash
-cd backend
-npm install
+npm run install-all
 ```
 
-**Frontend:**
-```bash
-cd frontend
-npm install
-```
+### 3. Configure Environment
 
-### Step 3: Environment Configuration
+Create a `.env` file in the `backend` directory and add your OpenAI API key:
 
-Create `backend/.env`:
 ```env
 OPENAI_API_KEY=your_openai_api_key_here
-PORT=3000
-NODE_ENV=development
 ```
 
-### Step 4: Start ChromaDB (Docker)
+### 4. Run the Application
 
-```bash
-docker run -p 8000:8000 --name chromadb-server -v 'path/to/your/project/chroma_data:/chroma/chroma' chromadb/chroma:0.4.24
+1.  **Start ChromaDB**:
+    ```bash
+    docker run -p 8000:8000 chromadb/chroma
+    ```
 
-### Step 5: Start Application
+2.  **Start Backend & Frontend**:
+    ```bash
+    npm start
+    npm run client
+    ```
 
-**Terminal 1 - Backend:**
-```bash
-cd backend
-npm start
-```
-
-**Terminal 2 - Frontend:**
-```bash
-cd frontend
-npm run dev
-```
-
-**Access at:** `http://localhost:5173`
+3.  **Access the app** at `http://localhost:5173`.
 
 ---
 
 ## 🚀 Usage
 
-1. **Enter Search Query**: Type your research topic (e.g., "quantum computing")
-2. **Select Source**: Choose from arXiv, PubMed, or All Sources
-3. **Click Search**: AI processes and retrieves relevant papers
-4. **View Results**: 
-   - Paper titles and authors
-   - AI-generated summaries
-   - Links to full papers
-   - Source information
-
-### Example Queries
-- "machine learning in healthcare"
-- "quantum entanglement applications"
-- "CRISPR gene editing techniques"
-- "neural network optimization"
+1.  **Enter a search query** in the input field.
+2.  **Select a source** from the dropdown menu.
+3.  **Click "Search"** to retrieve and analyze papers.
 
 ---
 
-## 📁 Project Structure
-
-```
-ai-research-agent/
-├── .git/                    # Git version control directory
-├── backend/
-│   ├── aiAgent.js           # OpenAI integration (summaries & embeddings)
-│   ├── paperFetcher.js      # arXiv & PubMed API clients
-│   ├── index.js             # Express server & ChromaDB integration
-│   ├── package.json         # Backend dependencies
-│   └── .env                 # Environment variables (not in repo)
-├── frontend/
-│   ├── src/
-│   │   ├── App.jsx          # Main React component
-│   │   ├── App.css          # Styles
-│   │   └── main.jsx         # React entry point
-│   ├── vite.config.js       # Vite configuration with proxy
-│   └── package.json         # Frontend dependencies
-├── chroma_data/             # ChromaDB persistent storage (Docker volume)
-├── node_modules/            # Project-level Node.js dependencies
-├── .gitignore               # Specifies intentionally untracked files to ignore
-├── package-lock.json        # Records the exact dependency tree
-├── package.json             # Project-level dependencies and scripts
-└── Readme                   # This file
-```
-
----
-
-## 🧠 Key Learnings
-
-### Technical Skills Developed
-
-**Full-Stack Development**
-- Built RESTful API with Express.js
-- Created responsive React frontend
-- Implemented proxy configuration for development
-
-**AI & Machine Learning**
-- Integrated OpenAI GPT-4o-mini API
-- Worked with vector embeddings and semantic similarity
-- Implemented RAG (Retrieval-Augmented Generation) pattern
-
-**Database Technologies**
-- Deployed vector database using Docker
-- Understood embedding storage and retrieval
-- Implemented hybrid search (cached + new results)
-
-**DevOps & Tools**
-- Docker containerization
-- Environment variable management
-- API rate limiting and error handling
-
-### Challenges Overcome
-
-1. **ChromaDB Version Compatibility**
-   - Issue: Client library version mismatch with Docker image
-   - Solution: Downgraded to chromadb@1.8.1 to match server 0.4.24
-
-2. **Proxy Configuration**
-   - Issue: Frontend CORS errors when calling backend
-   - Solution: Configured Vite proxy to forward `/api` requests
-
-3. **Rate Limiting**
-   - Issue: OpenAI API rate limits on free tier
-   - Solution: Implemented error handling and graceful degradation
-
-4. **Async Data Flow**
-   - Issue: Managing multiple async operations (fetch, summarize, embed, store)
-   - Solution: Used Promise.all() and proper error boundaries
-
----
-
-## 🔮 Future Enhancements
-
-### Planned Features
-- [ ] User authentication and personalized collections
-- [ ] Citation export (BibTeX, APA, MLA)
-- [ ] Advanced filters (date range, citation count)
-- [ ] Paper recommendation system
-- [ ] Collaborative annotation tools
-- [ ] PDF full-text analysis
-- [ ] Research trend visualization
-- [ ] Mobile app version
-
-### Technical Improvements
-- [ ] Implement caching layer (Redis)
-- [ ] Add comprehensive testing (Jest, React Testing Library)
-- [ ] Migrate to TypeScript for type safety
-- [ ] Implement GraphQL API
-- [ ] Add CI/CD pipeline
-- [ ] Performance monitoring and analytics
-- [ ] Kubernetes deployment for scalability
-
----
-
-## 📊 Performance Metrics
-
-- **Average Search Time**: 15-30 seconds (depending on new papers)
-- **Cache Hit Rate**: ~40% for related searches
-- **Papers per Search**: 5-10 results
-- **Embedding Dimension**: 1536 (OpenAI text-embedding-3-small)
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
----
+Licensed under the MIT License.

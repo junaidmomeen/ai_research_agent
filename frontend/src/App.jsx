@@ -31,7 +31,9 @@ function App() {
             });
 
             if (!response.ok) {
-                throw new Error('Search failed');
+                const errorData = await response.json().catch(() => null);
+                const message = errorData?.error || `Search failed with status: ${response.status}`;
+                throw new Error(message);
             }
 
             const data = await response.json();
@@ -45,7 +47,7 @@ function App() {
                 summary: data.summaries[index] || 'Summary not available'
             })));
         } catch (err) {
-            setError('Failed to fetch results. Please try again.');
+            setError(err.message || 'Failed to fetch results. Please try again.');
             console.error('Search error:', err);
         } finally {
             setLoading(false);
@@ -79,6 +81,7 @@ function App() {
                                     <option value="all">All Sources</option>
                                     <option value="arxiv">arXiv</option>
                                     <option value="pubmed">PubMed</option>
+                                    <option value="semantic">Semantic Scholar</option>
                                 </select>
                             </div>
                             <div className="w-full md:w-2/12 px-2">

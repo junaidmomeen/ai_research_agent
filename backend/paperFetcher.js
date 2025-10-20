@@ -16,6 +16,7 @@ async function fetchFromArxiv(query) {
             timeout: 10000 // 10 second timeout
         });
 
+        console.log('arXiv API response:', response.data);
         const result = await parser.parseStringPromise(response.data);
         if (!result.feed.entry) {
             console.log('No results found in arXiv');
@@ -30,7 +31,7 @@ async function fetchFromArxiv(query) {
             source: 'arxiv'
         }));
     } catch (error) {
-        console.error('arXiv API error:', error.message);
+        console.error('arXiv API error:', error);
         if (error.response) {
             console.error('arXiv API response:', error.response.data);
         }
@@ -54,6 +55,7 @@ async function fetchFromPubMed(query) {
             timeout: 10000 // 10 second timeout
         });
 
+        console.log('PubMed API search response:', searchResponse.data);
         const ids = searchResponse.data.esearchresult.idlist;
         if (!ids || ids.length === 0) {
             console.log('No results found in PubMed');
@@ -70,6 +72,7 @@ async function fetchFromPubMed(query) {
             timeout: 10000
         });
 
+        console.log('PubMed API details response:', detailsResponse.data);
         return Object.values(detailsResponse.data.result || {})
             .filter(paper => paper.uid)
             .map(paper => ({
@@ -80,9 +83,44 @@ async function fetchFromPubMed(query) {
                 source: 'pubmed'
             }));
     } catch (error) {
-        console.error('PubMed API error:', error.message);
+        console.error('PubMed API error:', error);
         if (error.response) {
             console.error('PubMed API response:', error.response.data);
+        }
+        return []; // Return empty array instead of throwing
+    }
+}
+
+async function fetchFromSemanticScholar(query) {
+    try {
+        console.log('Fetching from Semantic Scholar:', query);
+        const baseUrl = 'https://api.semanticscholar.org/graph/v1';
+        const response = await axios.get(`${baseUrl}/paper/search`, {
+            params: {
+                query: query,
+                fields: 'title,authors,abstract,url',
+                limit: 5
+            },
+            timeout: 10000 // 10 second timeout
+        });
+
+        console.log('Semantic Scholar API response:', response.data);
+        if (!response.data.data || response.data.data.length === 0) {
+            console.log('No results found in Semantic Scholar');
+            return [];
+        }
+
+        return response.data.data.map(paper => ({
+            title: paper.title,
+            authors: paper.authors.map(author => author.name),
+            summary: paper.abstract || 'No abstract available',
+            link: paper.url,
+            source: 'semantic'
+        }));
+    } catch (error) {
+        console.error('Semantic Scholar API error:', error);
+        if (error.response) {
+            console.error('Semantic Scholar API response:', error.response.data);
         }
         return []; // Return empty array instead of throwing
     }
@@ -112,10 +150,15 @@ export async function fetchPapers(query, source = 'all') {
             papers = [...papers, ...pubmedPapers];
         }
 
+        if (source === 'all' || source === 'semantic') {
+            const semanticPapers = await fetchFromSemanticScholar(query);
+            papers = [...papers, ...semanticPapers];
+        }
+
         console.log(`Found ${papers.length} papers in total`);
         return papers;
     } catch (error) {
         console.error('Error fetching papers:', error);
         throw new Error(`Failed to fetch papers: ${error.message}`);
     }
-} 
+}
