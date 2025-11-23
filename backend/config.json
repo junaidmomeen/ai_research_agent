@@ -1,5 +1,0 @@
-{
-  "arxivApiUrl": "http://export.arxiv.org/api/query",
-  "pubmedApiUrl": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi",
-  "maxResults": 5
-}
